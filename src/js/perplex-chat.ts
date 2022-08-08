@@ -23,6 +23,7 @@ const channel = urlParams.get('channel') || 'harmfulopinions'
 
 const ffzEmotes = []
 const bttvEmotes = []
+const stvEmotes = []
 
 let loadedEmotes = false
 
@@ -48,6 +49,16 @@ function getEmotes (channelId: string) {
       bttvEmotes.push(...res.sharedEmotes)
       bttvEmotes.push(...res.channelEmotes)
     }
+  })
+
+  fetch(`https://api.7tv.app/v2/users/${channelId}/emotes`).then(res => res.json()).then(res => {
+    if (!res.error) {
+      stvEmotes.push(...res)
+    }
+  })
+
+  fetch(`https://api.7tv.app/v2/emotes/global`).then(res => res.json()).then(res => {
+    stvEmotes.push(...res)
   })
 }
 
@@ -118,6 +129,7 @@ function displayMessage (msg: PrivmsgMessage | UsernoticeMessage) {
         const matchesTwitch = msg.emotes.find(emote => emote.code === word)
         const matchesFFZ = ffzEmotes.find(emote => emote.name === word)
         const matchesBTTV = bttvEmotes.find(emote => emote.code === word)
+        const matchesSTV = stvEmotes.find(emote => emote.name === word)
 
         if (matchesTwitch != null) {
           url = `//static-cdn.jtvnw.net/emoticons/v2/${matchesTwitch.id}/default/dark/3.0`
@@ -126,6 +138,8 @@ function displayMessage (msg: PrivmsgMessage | UsernoticeMessage) {
           url = emoteUrls[emoteUrls.length - 1]
         } else if (matchesBTTV != null) {
           url = `//cdn.betterttv.net/emote/${matchesBTTV.id}/3x`
+        } else if (matchesSTV != null) {
+          url = `//cdn.7tv.app/emote/${matchesSTV.id}/4x`
         }
 
         if (url) {
